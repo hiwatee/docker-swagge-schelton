@@ -1,0 +1,41 @@
+version: "3.3"
+services:
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: "swagger-ui-forxxx"
+    ports:
+      - "8082:8080"
+    volumes:
+      - ./swagger/openapi.yaml:/openapi.yaml
+    environment:
+      SWAGGER_JSON: /openapi.yaml
+
+  swagger-api:
+    image: danielgtaylor/apisprout
+    container_name: "swagger-api-forxxx"
+    ports:
+      - "8888:8000"
+    volumes:
+      - ./swagger/openapi.yaml:/openapi.yaml
+    entrypoint: /usr/local/bin/apisprout /openapi.yaml --watch
+    command: /openapi.json
+    networks:
+      swagger_link:
+        aliases:
+          - local.swagger.apisprout
+
+  swagger-nginx:
+    image: nginx:mainline-alpine
+    container_name: "swagger-nginx-forxxx"
+    ports:
+      - "8084:8084"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      swagger_link:
+        aliases:
+          - local.swagger.api
+
+networks:
+  swagger_link:
+    external: true
